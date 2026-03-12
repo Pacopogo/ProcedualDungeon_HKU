@@ -163,9 +163,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92090ef7460818e4892152b632cd8678, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldGenerator
-  worldSeed: 42
-  worldSize: 4
   prefab: {fileID: 2313516449370888281, guid: cf5f4f64ec2ff72469e0fd96ccba912c, type: 3}
+  worldSeed: 4
+  worldSize: 8
+  treasureCount: 1
+  dangerCount: 1
   tiles: []
 --- !u!1 &595931920
 GameObject:

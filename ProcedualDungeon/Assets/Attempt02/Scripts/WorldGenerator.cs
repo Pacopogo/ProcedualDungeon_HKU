@@ -6,13 +6,15 @@ using UnityEngine.UIElements;
 
 public class WorldGenerator : MonoBehaviour
 {
+    [SerializeField] private GameObject prefab;
+
+    [Header("World Settings")]
     [SerializeField] private int worldSeed = 42;
     [SerializeField] private int worldSize = 4;
 
-    [SerializeField] private GameObject prefab;
-
     private Vector2Int origin = Vector2Int.zero;
 
+    [Header("Map Settings")]
     [SerializeField] private int treasureCount = 1;
     [SerializeField] private int dangerCount = 1;
 
@@ -62,7 +64,7 @@ public class WorldGenerator : MonoBehaviour
 
     private Vector2Int RandomVector()
     {
-        int rnd = Random.Range(0, 3);
+        int rnd = Random.Range(0, 4);
 
         switch (rnd)
         {
@@ -99,8 +101,6 @@ public class WorldGenerator : MonoBehaviour
 
         origin += RandomVector();
 
-        Debug.Log(origin);
-
         if (IsOccupied(origin))
         {
             origin = o;
@@ -125,6 +125,22 @@ public class WorldGenerator : MonoBehaviour
     [ContextMenu("Generate interesting Rooms")]
     private void PlaceRooms()
     {
-        
+        Random.InitState(worldSeed);
+
+        List<Tile> rooms = new List<Tile>();
+        foreach(var tile in tiles)
+        {
+            if(tile.GetComponent<Tile>().isTyped)
+                continue;
+
+            rooms.Add(tile.GetComponent<Tile>());
+        }
+
+        for (int i = 0; i < treasureCount; i++)
+        {
+            int rnd = Random.Range(0, rooms.Count);
+
+            rooms[rnd].SetType(tileType.Treasure);
+        }
     }
 }
