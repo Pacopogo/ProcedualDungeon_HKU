@@ -164,9 +164,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldGenerator
   prefab: {fileID: 2313516449370888281, guid: cf5f4f64ec2ff72469e0fd96ccba912c, type: 3}
-  worldSeed: 4
-  worldSize: 8
-  treasureCount: 1
+  worldSeed: 8
+  worldSize: 16
+  treasureCount: 3
   dangerCount: 1
   tiles: []
 --- !u!1 &595931920
@@ -360,10 +360,10 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.33490568, g: 0.9094532, b: 1, a: 1}
+  m_Color: {r: 0.7664262, g: 1, b: 0.7122642, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

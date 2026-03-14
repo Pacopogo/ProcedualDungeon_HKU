@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices.WindowsRuntime;
+using UnityEditor;
 using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -18,25 +20,16 @@ public class WorldGenerator : MonoBehaviour
     [SerializeField] private int treasureCount = 1;
     [SerializeField] private int dangerCount = 1;
 
-    [SerializeField] private List<GameObject> tiles = new List<GameObject>();
+    public List<GameObject> tiles = new List<GameObject>();
 
-    private void Start()
+    private Vector2Int[] directions = new Vector2Int[]
     {
-        Random.InitState(worldSeed);
-    }
+        new Vector2Int(1, 0),
+        new Vector2Int(-1, 0),
+        new Vector2Int(0, 1),
+        new Vector2Int(0, -1)
+    };
 
-    [ContextMenu("PRINT RND")]
-    public void RandomNumbs()
-    {
-        Random.InitState(worldSeed);
-
-        int rnd = 0;
-        for (int i = 0; i < worldSeed; i++)
-        {
-            rnd = Random.Range(0, 10000);
-            Debug.Log(rnd);
-        }
-    }
 
     [ContextMenu("Place Tiles")]
     public void PlaceRandomTiles()
@@ -45,40 +38,44 @@ public class WorldGenerator : MonoBehaviour
 
         for (int x = 0; x < worldSize; x++)
         {
-            for (int y = 0; y < worldSize; y++)
-            {
-                GameObject obj = Instantiate(prefab);
+            GameObject obj = Instantiate(prefab);
 
-                if (y == 0 && x == 0)
-                    obj.GetComponent<Tile>().SetType(tileType.Start);
+            obj.transform.position = new Vector2(origin.x, origin.y);
+            tiles.Add(obj);
 
-                obj.transform.position = new Vector2(origin.x, origin.y);
-                tiles.Add(obj);
-
-                NewOrigin();
-            }
+            NewOrigin();
         }
 
-        tiles[tiles.Count - 1].GetComponent<Tile>().SetType(tileType.Finish);
+        SetRooms();
+    }
+
+    private void SetRooms()
+    {
+        tiles[0].GetComponent<Tile>().SetType(tileType.Start);
+        GetFurthersFromSpot(tiles[0].transform).SetType(tileType.Finish);
+
+        GetFurthersFromSpot(tiles[tiles.Count - 1].transform).SetType(tileType.Treasure);
+
+    }
+
+    private void NewOrigin()
+    {
+        Vector2Int o = origin;
+
+        origin += RandomVector();
+
+        if (IsOccupied(origin))
+        {
+            origin = o;
+            NewOrigin();
+        }
     }
 
     private Vector2Int RandomVector()
     {
-        int rnd = Random.Range(0, 4);
+        int rnd = Random.Range(0, directions.Length);
 
-        switch (rnd)
-        {
-            case 0:
-                return Vector2Int.up;
-            case 1:
-                return Vector2Int.down;
-            case 2:
-                return Vector2Int.right;
-            case 3:
-                return Vector2Int.left;
-        }
-
-        return Vector2Int.up;
+        return directions[rnd];
     }
 
     private bool IsOccupied(Vector2 pos)
@@ -95,18 +92,6 @@ public class WorldGenerator : MonoBehaviour
         return false;
     }
 
-    private void NewOrigin()
-    {
-        Vector2Int o = origin;
-
-        origin += RandomVector();
-
-        if (IsOccupied(origin))
-        {
-            origin = o;
-            NewOrigin();
-        }
-    }
 
     [ContextMenu("Replace")]
     private void Replace()
@@ -128,9 +113,9 @@ public class WorldGenerator : MonoBehaviour
         Random.InitState(worldSeed);
 
         List<Tile> rooms = new List<Tile>();
-        foreach(var tile in tiles)
+        foreach (var tile in tiles)
         {
-            if(tile.GetComponent<Tile>().isTyped)
+            if (tile.GetComponent<Tile>().isTyped)
                 continue;
 
             rooms.Add(tile.GetComponent<Tile>());
@@ -142,5 +127,42 @@ public class WorldGenerator : MonoBehaviour
 
             rooms[rnd].SetType(tileType.Treasure);
         }
+    }
+
+    private Tile GetFurthersFromSpot(Transform origin)
+    {
+        Tile furtherst = null;
+        Transform current = null;
+        Vector3 distance = Vector3.zero;
+        Vector3 previous = Vector3.zero;
+
+        foreach (var tile in tiles)
+        {
+            current = tile.transform;
+            distance = current.position - origin.position;
+
+            if (distance.magnitude < previous.magnitude)
+                continue;
+
+            previous = distance;
+            furtherst = tile.GetComponent<Tile>();
+        }
+
+        return furtherst;
+    }
+
+    private List<Tile> GetNeigbours(Transform origin)
+    {
+        List<Tile> neigbours = new List<Tile>();
+
+
+
+        foreach (var tile in tiles)
+        {
+
+        }
+
+        return neigbours;
+
     }
 }
