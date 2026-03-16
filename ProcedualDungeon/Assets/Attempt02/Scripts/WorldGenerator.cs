@@ -10,7 +10,7 @@ public class WorldGenerator : MonoBehaviour
 
     [SerializeField] private TMP_Text seedText;
 
-    [SerializeField] private float generationSpeed = 0.1f;
+    public float generationSpeed = 0.1f;
 
     [SerializeField] private GameObject prefab;
 
@@ -38,7 +38,7 @@ public class WorldGenerator : MonoBehaviour
     }
     public void PlaceRandomSeed()
     {
-        worldSeed = Random.Range(-1000, 1000);
+        worldSeed = Random.Range(-10000, 10000);
         Replace();
     }
 
@@ -68,13 +68,22 @@ public class WorldGenerator : MonoBehaviour
 
         SetRooms();
 
-        cameraTrans.position = GetMiddleTile(
-            tiles[0].transform,
-            GetFurthersFromSpot(tiles[0].transform).transform
-            ).transform.position;
+        cameraTrans.position = GetMiddleTile(tiles[0].transform, GetFurthersFromSpot(tiles[0].transform).transform).transform.position;
         cameraTrans.Translate(Vector3.forward * cameraStepBack);
 
-        StartCoroutine(GenerateTiles());
+        if (generationSpeed > 0)
+        {
+            StartCoroutine(GenerateTiles());
+        }
+        else
+        {
+            foreach (var tile in tiles)
+            {
+                tile.gameObject.SetActive(true);
+            }
+
+            isBuilding = false;
+        }
 
     }
 
@@ -92,19 +101,31 @@ public class WorldGenerator : MonoBehaviour
 
     private void SetRooms()
     {
-        tiles[0].GetComponent<Tile>().SetType(tileType.Start);
 
+        //Set Finish as furtherst room from the first placed tile
         Tile finish = GetFurthersFromSpot(tiles[0].transform);
         finish.SetType(tileType.Finish);
 
-        //GetFurthersFromSpot(tiles[tiles.Count - 1].transform).SetType(tileType.Treasure);
+        //Set Start as furtherst room from Finish
+        Tile Start = GetFurthersFromSpot(finish.transform);
+        Start.SetType(tileType.Start);
 
+        //Set treasure 
         Tile Treasure = GetMiddleTile(tiles[0].transform, finish.transform);
         Treasure.SetType(tileType.Treasure);
 
+        //Set danger rooms around treasure room
         foreach (var tile in GetNeigbours(Treasure.transform))
         {
             tile.SetType(tileType.Danger);
+        }
+        
+        //Dead ends have Puzzle tiles
+        foreach (var tile in tiles)
+        {
+            if(GetNeigbours(tile.transform).Count <= 1)
+                tile.GetComponent<Tile>().SetType(tileType.Puzzle);
+            
         }
     }
 
@@ -114,26 +135,37 @@ public class WorldGenerator : MonoBehaviour
 
         origin += RandomVector();
 
-        if (IsOccupied(origin))
+        if (GetNeigbours(tiles[tiles.Count - 1].transform).Count < 4)
         {
-            origin = o;
-            NewOrigin();
+            if (IsOccupied(origin))
+            {
+                origin = o;
+                NewOrigin();
+            }
+        }
+        else
+        {
+            Vector2Int rndDir = RandomVector();
+            while (IsOccupied(origin))
+            {
+                origin += rndDir;
+            }
         }
     }
 
     private Vector2Int RandomVector()
     {
         int rnd = Random.Range(0, directions.Length);
-
         return directions[rnd];
     }
 
-    private bool IsOccupied(Vector2 pos)
+    private bool IsOccupied(Vector2Int pos)
     {
 
         foreach (var tile in tiles)
         {
-            if (tile.transform.position.x == pos.x && tile.transform.position.y == pos.y)
+            if (tile.transform.position.x == pos.x &&
+                tile.transform.position.y == pos.y)
             {
                 return true;
             }
@@ -227,6 +259,5 @@ public class WorldGenerator : MonoBehaviour
         }
 
         return neigbours;
-
     }
 }

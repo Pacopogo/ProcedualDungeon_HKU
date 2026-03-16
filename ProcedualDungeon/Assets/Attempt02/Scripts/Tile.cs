@@ -7,7 +7,8 @@ public enum tileType
     Start,
     Finish,
     Treasure,
-    Danger
+    Danger,
+    Puzzle
 }
 
 public class Tile : MonoBehaviour
@@ -47,25 +48,35 @@ public class Tile : MonoBehaviour
             case tileType.Start:
                 GetComponent<SpriteRenderer>().color = Color.green;
                 iconSprite.sprite = Icons[0];
-                gameObject.name = "start";
+                gameObject.name = "Start";
 
 
                 break;
             case tileType.Finish:
                 GetComponent<SpriteRenderer>().color = Color.red;
                 iconSprite.sprite = Icons[1];
-                gameObject.name = "finish";
+                gameObject.name = "Finish";
 
                 break;
             case tileType.Treasure:
+
+                gameObject.name = "Treasure";
                 GetComponent<SpriteRenderer>().color = Color.yellow;
                 iconSprite.sprite = Icons[2];
 
                 break;
             case tileType.Danger:
-                GetComponent<SpriteRenderer>().color = Color.purple;
-                iconSprite.sprite = Icons[3];
 
+                gameObject.name = "Danger";
+                GetComponent<SpriteRenderer>().color = Color.orange;
+                iconSprite.sprite = Icons[3];
+                break;
+
+            case tileType.Puzzle:
+
+                gameObject.name = "Puzzle";
+                GetComponent<SpriteRenderer>().color = Color.purple;
+                iconSprite.sprite = Icons[4];
                 break;
         }
     }
