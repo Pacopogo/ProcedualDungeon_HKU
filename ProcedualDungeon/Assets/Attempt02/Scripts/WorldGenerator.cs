@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 
@@ -19,20 +18,19 @@ public class WorldGenerator : MonoBehaviour
     public int worldSeed = 42;
     [SerializeField] private int worldSize = 4;
 
-    private Vector2 origin = Vector2.zero;
+    private Vector2Int origin = Vector2Int.zero;
 
     public List<GameObject> tiles = new List<GameObject>();
 
-    private Vector2[] directions = new Vector2[]
+    private Vector2Int[] directions = new Vector2Int[]
     {
-        new Vector2(1, 0),
-        new Vector2(-1, 0),
-        new Vector2(0, 1),
-        new Vector2(0, -1)
+        new Vector2Int(1, 0),
+        new Vector2Int(-1, 0),
+        new Vector2Int(0, 1),
+        new Vector2Int(0, -1)
     };
 
     private bool isBuilding;
-
 
     private void Start()
     {
@@ -63,9 +61,8 @@ public class WorldGenerator : MonoBehaviour
             obj.transform.parent = transform;
             tiles.Add(obj);
 
-            obj.GetComponent<Tile>().worldGen = this;
-
             obj.SetActive(false);
+
             NewOrigin();
         }
 
@@ -118,48 +115,57 @@ public class WorldGenerator : MonoBehaviour
         Treasure.SetType(tileType.Treasure);
 
         //Set danger rooms around treasure room
-        foreach (var tile in GetNeigbours(Treasure.transform.position))
+        foreach (var tile in GetNeigbours(Treasure.transform))
         {
             tile.SetType(tileType.Danger);
         }
-
+        
         //Dead ends have Puzzle tiles
         foreach (var tile in tiles)
         {
-            int tCount = GetNeigbours(tile.transform.position).Count;
-
-
-            if (tCount <= 1)
+            if(GetNeigbours(tile.transform).Count <= 1)
                 tile.GetComponent<Tile>().SetType(tileType.Puzzle);
-
-            if(tCount >= 4)
-                tile.GetComponent<Tile>().SetType(tileType.Danger);
-
+            
         }
     }
 
     private void NewOrigin()
     {
-        Vector2 Dir = RandomVector();
-        origin += Dir;
+        Vector2Int o = origin;
 
-        while (IsOccupied(origin))
+        origin += RandomVector();
+
+        if (GetNeigbours(tiles[tiles.Count - 1].transform).Count < 4)
         {
-            origin += Dir;
+            if (IsOccupied(origin))
+            {
+                origin = o;
+                NewOrigin();
+            }
+        }
+        else
+        {
+            Vector2Int rndDir = RandomVector();
+            while (IsOccupied(origin))
+            {
+                origin += rndDir;
+            }
         }
     }
 
-    private Vector2 RandomVector()
+    private Vector2Int RandomVector()
     {
         int rnd = Random.Range(0, directions.Length);
         return directions[rnd];
     }
 
-    private bool IsOccupied(Vector2 pos)
+    private bool IsOccupied(Vector2Int pos)
     {
+
         foreach (var tile in tiles)
         {
-            if (tile.transform.position.x == pos.x && tile.transform.position.y == pos.y)
+            if (tile.transform.position.x == pos.x &&
+                tile.transform.position.y == pos.y)
             {
                 return true;
             }
@@ -236,16 +242,15 @@ public class WorldGenerator : MonoBehaviour
         return middleTile;
     }
 
-    public List<Tile> GetNeigbours(Vector3 origin)
+    private List<Tile> GetNeigbours(Transform origin)
     {
         List<Tile> neigbours = new List<Tile>();
-        Vector3 newOrigin = new Vector3(origin.x, origin.y, 0);
 
         foreach (var tile in tiles)
         {
             for (int i = 0; i < directions.Length; i++)
             {
-                Vector3 currentPos = newOrigin + new Vector3(directions[i].x, directions[i].y);
+                Vector3 currentPos = origin.position + new Vector3(directions[i].x, directions[i].y);
                 if (tile.gameObject.transform.position == currentPos)
                 {
                     neigbours.Add(tile.GetComponent<Tile>());

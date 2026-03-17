@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Events;
 
 public enum tileType
 {
@@ -20,10 +19,6 @@ public class Tile : MonoBehaviour
 
     [SerializeField] private SpriteRenderer iconSprite;
     [SerializeField] private Sprite[] Icons;
-
-    public UnityEvent OnTileClick;
-
-    [HideInInspector] public WorldGenerator worldGen;
 
     public void SetType(tileType type)
     {
@@ -84,12 +79,5 @@ public class Tile : MonoBehaviour
                 iconSprite.sprite = Icons[4];
                 break;
         }
-    }
-
-    private void OnMouseDown()
-    {
-        Debug.Log(worldGen.GetNeigbours(transform.position).Count);
-
-        OnTileClick?.Invoke();
     }
 }
