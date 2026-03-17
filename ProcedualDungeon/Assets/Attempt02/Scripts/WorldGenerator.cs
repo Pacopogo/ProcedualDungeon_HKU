@@ -20,6 +20,7 @@ public class WorldGenerator : MonoBehaviour
 
     private Vector2Int origin = Vector2Int.zero;
 
+    //NOTE: make a dictonary
     public List<GameObject> tiles = new List<GameObject>();
 
     private Vector2Int[] directions = new Vector2Int[]
