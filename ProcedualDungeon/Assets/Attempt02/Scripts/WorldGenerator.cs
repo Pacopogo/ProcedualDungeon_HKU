@@ -116,7 +116,7 @@ public class WorldGenerator : MonoBehaviour
         Start.SetType(tileType.Start);
 
         //Set treasure 
-        Tile Treasure = GetMiddleTile(tiles[Vector2Int.zero].transform, finish.transform);
+        Tile Treasure = GetMiddleTile(Start.transform, finish.transform);
         Treasure.SetType(tileType.Treasure);
 
         //Set danger rooms around treasure room
