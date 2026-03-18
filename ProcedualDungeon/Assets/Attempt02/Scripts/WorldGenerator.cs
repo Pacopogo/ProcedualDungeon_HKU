@@ -130,7 +130,6 @@ public class WorldGenerator : MonoBehaviour
         {
             if (GetNeigbours(tile.Value.transform).Count <= 1)
                 tile.Value.GetComponent<Tile>().SetType(tileType.Puzzle);
-
         }
     }
 
@@ -144,21 +143,9 @@ public class WorldGenerator : MonoBehaviour
         }
     }
 
-    private Vector2Int RandomVector()
-    {
-        int rnd = Random.Range(0, directions.Length);
-        return directions[rnd];
-    }
-
-    private bool IsOccupied(Vector2Int pos)
-    {
-        var T = new GameObject();
-        if (tiles.TryGetValue(pos, out T))
-            return true;
-
-        return false;
-    }
-
+    private Vector2Int RandomVector() => directions[Random.Range(0, directions.Length)];
+    
+    private bool IsOccupied(Vector2Int pos) => tiles.ContainsKey(pos);
 
     [ContextMenu("Replace")]
     public void Replace()
@@ -236,11 +223,12 @@ public class WorldGenerator : MonoBehaviour
         for (int i = 0; i < directions.Length; i++)
         {
             Vector2Int currentPos = new Vector2Int(Mathf.RoundToInt(origin.position.x), Mathf.RoundToInt(origin.position.y)) + directions[i];
-            var T = new GameObject();
-            if (!tiles.TryGetValue(currentPos, out T))
-                continue;
-
-            neigbours.Add(tiles[currentPos].GetComponent<Tile>());
+            
+            var tile = new GameObject();
+            if (tiles.TryGetValue(currentPos, out tile))
+            {
+                neigbours.Add(tile.GetComponent<Tile>());
+            }
         }
 
         return neigbours;
