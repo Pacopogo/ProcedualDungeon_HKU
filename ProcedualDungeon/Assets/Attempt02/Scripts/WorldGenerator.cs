@@ -84,7 +84,7 @@ public class WorldGenerator : MonoBehaviour
         {
             foreach (var tile in tiles)
             {
-                tile.Value.gameObject.SetActive(false);
+                tile.Value.gameObject.SetActive(true);
             }
 
             isBuilding = false;
