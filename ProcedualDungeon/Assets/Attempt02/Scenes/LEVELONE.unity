@@ -166,7 +166,7 @@ MonoBehaviour:
   cameraTrans: {fileID: 1040298299}
   cameraStepBack: -14
   seedText: {fileID: 433791266}
-  generationSpeed: -66.4
+  generationSpeed: 0.01
   prefab: {fileID: 2313516449370888281, guid: cf5f4f64ec2ff72469e0fd96ccba912c, type: 3}
   worldSeed: 42
   worldSize: 16

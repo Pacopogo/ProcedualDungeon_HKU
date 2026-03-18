@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -20,8 +21,7 @@ public class WorldGenerator : MonoBehaviour
 
     private Vector2Int origin = Vector2Int.zero;
 
-    //NOTE: make a dictonary
-    public List<GameObject> tiles = new List<GameObject>();
+    public Dictionary<Vector2Int, GameObject> tiles = new Dictionary<Vector2Int, GameObject>();
 
     private Vector2Int[] directions = new Vector2Int[]
     {
@@ -60,7 +60,8 @@ public class WorldGenerator : MonoBehaviour
 
             obj.transform.position = new Vector2(origin.x, origin.y);
             obj.transform.parent = transform;
-            tiles.Add(obj);
+
+            tiles.Add(origin, obj);
 
             obj.SetActive(false);
 
@@ -69,7 +70,10 @@ public class WorldGenerator : MonoBehaviour
 
         SetRooms();
 
-        cameraTrans.position = GetMiddleTile(tiles[0].transform, GetFurthersFromSpot(tiles[0].transform).transform).transform.position;
+
+        cameraTrans.position = GetMiddleTile(
+            tiles[Vector2Int.zero].transform, GetFurthersFromSpot(tiles[Vector2Int.zero].transform).transform).transform.position;
+
         cameraTrans.Translate(Vector3.forward * cameraStepBack);
 
         if (generationSpeed > 0)
@@ -80,7 +84,7 @@ public class WorldGenerator : MonoBehaviour
         {
             foreach (var tile in tiles)
             {
-                tile.gameObject.SetActive(true);
+                tile.Value.gameObject.SetActive(false);
             }
 
             isBuilding = false;
@@ -92,7 +96,7 @@ public class WorldGenerator : MonoBehaviour
     {
         foreach (var tile in tiles)
         {
-            tile.SetActive(true);
+            tile.Value.gameObject.SetActive(true);
             yield return new WaitForSeconds(generationSpeed);
         }
 
@@ -104,7 +108,7 @@ public class WorldGenerator : MonoBehaviour
     {
 
         //Set Finish as furtherst room from the first placed tile
-        Tile finish = GetFurthersFromSpot(tiles[0].transform);
+        Tile finish = GetFurthersFromSpot(tiles[Vector2Int.zero].transform);
         finish.SetType(tileType.Finish);
 
         //Set Start as furtherst room from Finish
@@ -112,7 +116,7 @@ public class WorldGenerator : MonoBehaviour
         Start.SetType(tileType.Start);
 
         //Set treasure 
-        Tile Treasure = GetMiddleTile(tiles[0].transform, finish.transform);
+        Tile Treasure = GetMiddleTile(tiles[Vector2Int.zero].transform, finish.transform);
         Treasure.SetType(tileType.Treasure);
 
         //Set danger rooms around treasure room
@@ -120,37 +124,23 @@ public class WorldGenerator : MonoBehaviour
         {
             tile.SetType(tileType.Danger);
         }
-        
+
         //Dead ends have Puzzle tiles
         foreach (var tile in tiles)
         {
-            if(GetNeigbours(tile.transform).Count <= 1)
-                tile.GetComponent<Tile>().SetType(tileType.Puzzle);
-            
+            if (GetNeigbours(tile.Value.transform).Count <= 1)
+                tile.Value.GetComponent<Tile>().SetType(tileType.Puzzle);
+
         }
     }
 
     private void NewOrigin()
     {
-        Vector2Int o = origin;
+        Vector2Int rndDir = RandomVector();
 
-        origin += RandomVector();
-
-        if (GetNeigbours(tiles[tiles.Count - 1].transform).Count < 4)
+        while (IsOccupied(origin))
         {
-            if (IsOccupied(origin))
-            {
-                origin = o;
-                NewOrigin();
-            }
-        }
-        else
-        {
-            Vector2Int rndDir = RandomVector();
-            while (IsOccupied(origin))
-            {
-                origin += rndDir;
-            }
+            origin += rndDir;
         }
     }
 
@@ -162,15 +152,9 @@ public class WorldGenerator : MonoBehaviour
 
     private bool IsOccupied(Vector2Int pos)
     {
-
-        foreach (var tile in tiles)
-        {
-            if (tile.transform.position.x == pos.x &&
-                tile.transform.position.y == pos.y)
-            {
-                return true;
-            }
-        }
+        var T = new GameObject();
+        if (tiles.TryGetValue(pos, out T))
+            return true;
 
         return false;
     }
@@ -184,8 +168,10 @@ public class WorldGenerator : MonoBehaviour
 
         foreach (var tile in tiles)
         {
-            Destroy(tile.gameObject);
+            Destroy(tile.Value.gameObject);
         }
+        tiles.Clear();
+
         tiles.Clear();
 
         origin = Vector2Int.zero;
@@ -207,14 +193,14 @@ public class WorldGenerator : MonoBehaviour
 
         foreach (var tile in tiles)
         {
-            current = tile.transform;
+            current = tile.Value.transform;
             distance = current.position - origin.position;
 
             if (distance.magnitude < previous.magnitude)
                 continue;
 
             previous = distance;
-            furtherst = tile.GetComponent<Tile>();
+            furtherst = tile.Value.GetComponent<Tile>();
         }
 
         return furtherst;
@@ -222,7 +208,7 @@ public class WorldGenerator : MonoBehaviour
 
     private Tile GetMiddleTile(Transform posA, Transform posB)
     {
-        Tile middleTile = tiles[0].GetComponent<Tile>();
+        Tile middleTile = tiles[Vector2Int.zero].GetComponent<Tile>();
 
         Vector3 middleVec = (posB.position - posA.position) * 0.5f;
 
@@ -231,13 +217,13 @@ public class WorldGenerator : MonoBehaviour
 
         foreach (var tile in tiles)
         {
-            distance = middleVec - tile.transform.position;
+            distance = middleVec - tile.Value.transform.position;
 
             if (distance.magnitude > previous.magnitude)
                 continue;
 
             previous = distance;
-            middleTile = tile.GetComponent<Tile>();
+            middleTile = tile.Value.GetComponent<Tile>();
         }
 
         return middleTile;
@@ -247,16 +233,14 @@ public class WorldGenerator : MonoBehaviour
     {
         List<Tile> neigbours = new List<Tile>();
 
-        foreach (var tile in tiles)
+        for (int i = 0; i < directions.Length; i++)
         {
-            for (int i = 0; i < directions.Length; i++)
-            {
-                Vector3 currentPos = origin.position + new Vector3(directions[i].x, directions[i].y);
-                if (tile.gameObject.transform.position == currentPos)
-                {
-                    neigbours.Add(tile.GetComponent<Tile>());
-                }
-            }
+            Vector2Int currentPos = new Vector2Int(Mathf.RoundToInt(origin.position.x), Mathf.RoundToInt(origin.position.y)) + directions[i];
+            var T = new GameObject();
+            if (!tiles.TryGetValue(currentPos, out T))
+                continue;
+
+            neigbours.Add(tiles[currentPos].GetComponent<Tile>());
         }
 
         return neigbours;
