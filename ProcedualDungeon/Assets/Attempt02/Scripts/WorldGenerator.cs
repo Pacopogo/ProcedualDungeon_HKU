@@ -7,7 +7,8 @@ using UnityEngine;
 public class WorldGenerator : MonoBehaviour
 {
     [SerializeField] private Transform cameraTrans;
-    [SerializeField] private float cameraStepBack = -14f;
+    [SerializeField] private float cameraStepBack = -2f;
+    [SerializeField] private float cameraOffsetPercentage = 0.8f; //numbs between 0 and 1 as the %
 
     [SerializeField] private TMP_Text seedText;
 
@@ -17,7 +18,7 @@ public class WorldGenerator : MonoBehaviour
 
     [Header("World Settings")]
     public int worldSeed = 42;
-    [SerializeField] private int worldSize = 4;
+    public int worldSize = 16;
 
     private Vector2Int origin = Vector2Int.zero;
 
@@ -59,9 +60,9 @@ public class WorldGenerator : MonoBehaviour
             GameObject obj = Instantiate(prefab);
 
             obj.transform.position = new Vector2(origin.x, origin.y);
-            obj.transform.parent = transform;
-
             tiles.Add(origin, obj);
+
+            obj.transform.parent = transform;
 
             obj.SetActive(false);
 
@@ -71,10 +72,6 @@ public class WorldGenerator : MonoBehaviour
         SetRooms();
 
 
-        cameraTrans.position = GetMiddleTile(
-            tiles[Vector2Int.zero].transform, GetFurthersFromSpot(tiles[Vector2Int.zero].transform).transform).transform.position;
-
-        cameraTrans.Translate(Vector3.forward * cameraStepBack);
 
         if (generationSpeed > 0)
         {
@@ -131,6 +128,12 @@ public class WorldGenerator : MonoBehaviour
             if (GetNeigbours(tile.Value.transform).Count <= 1)
                 tile.Value.GetComponent<Tile>().SetType(tileType.Puzzle);
         }
+
+
+        cameraTrans.position = Treasure.transform.position;
+        float zoomOffset = Vector3.Distance(Start.transform.position, finish.transform.position) * cameraOffsetPercentage;
+        cameraTrans.Translate(Vector3.forward * cameraStepBack * zoomOffset);
+
     }
 
     private void NewOrigin()
@@ -144,7 +147,7 @@ public class WorldGenerator : MonoBehaviour
     }
 
     private Vector2Int RandomVector() => directions[Random.Range(0, directions.Length)];
-    
+
     private bool IsOccupied(Vector2Int pos) => tiles.ContainsKey(pos);
 
     [ContextMenu("Replace")]
@@ -158,9 +161,7 @@ public class WorldGenerator : MonoBehaviour
             Destroy(tile.Value.gameObject);
         }
         tiles.Clear();
-
-        tiles.Clear();
-
+        
         origin = Vector2Int.zero;
 
         PlaceRandomTiles();
@@ -183,7 +184,7 @@ public class WorldGenerator : MonoBehaviour
             current = tile.Value.transform;
             distance = current.position - origin.position;
 
-            if (distance.magnitude < previous.magnitude)
+            if (distance.magnitude <= previous.magnitude)
                 continue;
 
             previous = distance;
@@ -197,16 +198,16 @@ public class WorldGenerator : MonoBehaviour
     {
         Tile middleTile = tiles[Vector2Int.zero].GetComponent<Tile>();
 
-        Vector3 middleVec = (posB.position - posA.position) * 0.5f;
+        Vector3 middleVec = posB.position + (posA.position - posB.position) * 0.5f;
 
-        Vector3 distance = Vector3.zero;
-        Vector3 previous = middleVec;
+        float distance;
+        float previous = float.MaxValue;
 
         foreach (var tile in tiles)
         {
-            distance = middleVec - tile.Value.transform.position;
+            distance = Vector3.Distance(middleVec, tile.Value.transform.position);
 
-            if (distance.magnitude > previous.magnitude)
+            if (distance > previous)
                 continue;
 
             previous = distance;
@@ -223,8 +224,8 @@ public class WorldGenerator : MonoBehaviour
         for (int i = 0; i < directions.Length; i++)
         {
             Vector2Int currentPos = new Vector2Int(Mathf.RoundToInt(origin.position.x), Mathf.RoundToInt(origin.position.y)) + directions[i];
-            
-            var tile = new GameObject();
+
+            GameObject tile;
             if (tiles.TryGetValue(currentPos, out tile))
             {
                 neigbours.Add(tile.GetComponent<Tile>());
