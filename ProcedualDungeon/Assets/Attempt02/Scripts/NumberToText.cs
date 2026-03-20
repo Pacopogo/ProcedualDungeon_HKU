@@ -4,17 +4,22 @@ using UnityEngine.UI;
 
 public class NumberToText : MonoBehaviour
 {
+    [Header("World Seed")]
     [SerializeField] private WorldGenerator worldGenerator;
     [SerializeField] private TMP_InputField seedInputField;
 
-    [SerializeField] private TMP_InputField worldSizeField;
-
+    [Header("World Size")]
+    [SerializeField] private Slider worldSizeSlider;
+    [SerializeField] private TMP_Text worldSizeText;
+    
+    [Header("Build Speed")]
     [SerializeField] private Slider buildSlider;
     [SerializeField] private TMP_Text speedText;
 
     private void Start()
     {
         SetBuildSpeed();
+        SetWorldSize();
     }
     public void PrintCode()
     {
@@ -31,12 +36,10 @@ public class NumberToText : MonoBehaviour
 
     public void SetWorldSize()
     {
-        int numb = int.Parse(worldSizeField.text);
+        int numb = Mathf.RoundToInt(worldSizeSlider.value);
         Debug.Log("Current World Size:" + numb);
 
-        if(numb < 4)
-            numb = 4;
-
+        worldSizeText.text = numb.ToString();
         worldGenerator.worldSize = numb;
     }
 }

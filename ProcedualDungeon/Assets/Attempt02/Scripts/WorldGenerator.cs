@@ -34,6 +34,13 @@ public class WorldGenerator : MonoBehaviour
 
     private bool isBuilding;
 
+    [Header("Tile Types")]
+    [SerializeField] private TileType StartType;
+    [SerializeField] private TileType FinishType;
+    [SerializeField] private TileType TreasureType;
+    [SerializeField] private TileType DangerType;
+    [SerializeField] private TileType PuzzleType;
+
     private void Start()
     {
         seedText.text = worldSeed.ToString();
@@ -106,27 +113,27 @@ public class WorldGenerator : MonoBehaviour
 
         //Set Finish as furtherst room from the first placed tile
         Tile finish = GetFurthersFromSpot(tiles[Vector2Int.zero].transform);
-        finish.SetType(tileType.Finish);
+        finish.SetType(FinishType);
 
         //Set Start as furtherst room from Finish
         Tile Start = GetFurthersFromSpot(finish.transform);
-        Start.SetType(tileType.Start);
+        Start.SetType(StartType);
 
         //Set treasure 
         Tile Treasure = GetMiddleTile(Start.transform, finish.transform);
-        Treasure.SetType(tileType.Treasure);
+        Treasure.SetType(TreasureType);
 
         //Set danger rooms around treasure room
         foreach (var tile in GetNeigbours(Treasure.transform))
         {
-            tile.SetType(tileType.Danger);
+            tile.SetType(DangerType);
         }
 
         //Dead ends have Puzzle tiles
         foreach (var tile in tiles)
         {
             if (GetNeigbours(tile.Value.transform).Count <= 1)
-                tile.Value.GetComponent<Tile>().SetType(tileType.Puzzle);
+                tile.Value.GetComponent<Tile>().SetType(PuzzleType);
         }
 
 

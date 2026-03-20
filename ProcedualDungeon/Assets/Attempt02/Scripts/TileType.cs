@@ -1,16 +1,10 @@
 using UnityEngine;
 
-public class TileType : MonoBehaviour
+[CreateAssetMenu(fileName = "TileData", menuName = "Tiles/TileData", order = 1)]
+public class TileType : ScriptableObject
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    public string TileName = "Tile";
+    public Color TileColor = Color.white;
+    public Sprite TileIcon = null;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

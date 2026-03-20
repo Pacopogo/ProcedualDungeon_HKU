@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2937445d9dfddd749884530ec2e398ab, type: 3}
+  m_Name: Danger
+  m_EditorClassIdentifier: Assembly-CSharp::TileType
+  TileName: Tile
+  TileColor: {r: 1, g: 0.73373306, b: 0.28773582, a: 1}
+  TileIcon: {fileID: 1721830081, guid: 006805f09abb57b4980de64db7c217af, type: 3}
