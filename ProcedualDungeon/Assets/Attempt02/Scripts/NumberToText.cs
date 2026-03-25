@@ -16,10 +16,16 @@ public class NumberToText : MonoBehaviour
     [SerializeField] private Slider buildSlider;
     [SerializeField] private TMP_Text speedText;
 
+    [Header("Combat amount")]
+    [SerializeField] private Slider combatSlider;
+    [SerializeField] private TMP_Text combatText;
+
+
     private void Start()
     {
         SetBuildSpeed();
         SetWorldSize();
+        SetCombat();
     }
     public void PrintCode()
     {
@@ -41,5 +47,13 @@ public class NumberToText : MonoBehaviour
 
         worldSizeText.text = numb.ToString();
         worldGenerator.worldSize = numb;
+    }
+
+    public void SetCombat()
+    {
+        int numb = Mathf.RoundToInt(combatSlider.value);
+
+        combatText.text = numb.ToString();
+        worldGenerator.amountCombat = numb;
     }
 }
